@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="author" content="naseweis520" />
+<title>Save2Box</title>
+<link href="//fonts.googleapis.com/css?family=Lato:400,300,700" rel="stylesheet" type="text/css" />
+<style>*{box-sizing:border-box;margin:0;padding:0}body,html{background-color:#f9f9f9;font-family:Lato,Helvetica Neue,Segoe UI,Arial;font-size:1.2em;height:100%;width:100%}body{padding:1em}button{background-color:transparent;border:.2em solid #1e5dd1;color:#1e5dd1;cursor:pointer;font-family:Lato,Helvetica Neue,Segoe UI,Arial;font-size:1em;font-weight:300;margin-top:1em;padding:.5em 1em;width:100%}button.main{background-color:#1e5dd1;color:#fff}button:hover{background-color:#1ebbd1;color:#fff}h1,h2,h3,h4,h5,h6{font-weight:400;margin-top:.5em}h1{color:#1e5dd1;font-size:2.5em;font-weight:300;margin-top:0}input[type=text],input[type=url]{font-family:Lato,Helvetica Neue,Segoe UI,Arial;font-size:1em;font-weight:300;padding:.25em .5em;width:100%}label{color:#222;font-size:.8em}table{width:100%}.indicator{background-color:#1e5dd1;height:100%;width:0}.indicator.fail{background-color:#e31b2e}.indicator.success{background-color:#00bf56}.progress{background-color:rgba(0,0,0,.2);height:.5em;left:0;position:fixed;top:0;width:100%}</style>
+</head>
+
+<body>
+<h1><strong>Save2Box.</strong></h1>
+<h2>Enter URL</h2>
+<p>Enter the url to the file which you want to save in your Dropbox.</p>
+<form>
+	<table>
+		<thead>
+			<tr>
+				<th>URL</th>
+				<th>File name</th>
+			</tr>
+		</thead>
+		<tbody id="itemTable">
+			<tr>
+				<td><input type="url" /></td>
+				<td><input type="text" /></td>
+			</tr>
+		</tbody>
+	</table>
+	<div style="display:flex">
+		<button class="main">Upload</button>
+		<button type="button" id="addItem">Add item</button>
+	</div>
+	<p><em id="status"></em></p>
+</form>
+<div class="progress">
+	<div class="indicator"></div>
+</div>
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+<script id="dropboxjs" src="https://www.dropbox.com/static/api/2/dropins.js" data-app-key="s4501qz7foxbspp"></script>
+<script>
+jQuery(document).ready(function($) {
+	$("#addItem").click(function() {
+		$("#itemTable").append('<tr><td><input type="url" /><td><input type="text" /></tr>');
+	});
+	$("form").submit(function(e) {
+		e.preventDefault();
+		if($("form").hasClass("disabled")) return;
+		$("form").addClass("disabled");
+		$(".indicator").css("width", "0").removeClass("fail success");
+		$("#status").text("");
+		var options = {
+			files: [],
+			success: function () {
+				$("#status").text("Upload finished.");
+				$(".indicator").css("width", "100%").addClass("success");
+				$("form").removeClass("disabled");
+			},
+			progress: function(progress) {
+				console.log(progress * 100 + "%");
+				$("#status").text("Uploading...");
+				$(".indicator").css("width", progress * 100 + "%")
+			},
+			cancel: function () {
+				$("#status").text("Upload cancelled.");
+				$(".indicator").css("width", "100%").addClass("fail");
+				$("form").removeClass("disabled");
+			},
+			error: function (errorMessage) {
+				$("#status").text("Upload failed.");
+				$(".indicator").css("width", "100%").addClass("fail");
+				$("form").removeClass("disabled");
+			}
+		};
+		$("#itemTable tr").each(function(a,b) {
+			if($(b).find("input[type=url]") != "") options.files.push({
+				'url':$(b).find("input[type=url]").val(),
+				'filename':$(b).find("input[type=text]").val()
+			})
+		});
+		if(options.files.length > 0) {
+			Dropbox.save(options);
+			$("#status").text("Upload started.");
+		} else {
+			$("#status").text("No items.");
+			$("form").removeClass("disabled");
+		}
+	});
+});
+</script>
+</body>
+</html>
