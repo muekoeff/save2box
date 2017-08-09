@@ -59,4 +59,12 @@ function addRow() {
 		<input class="form-control" type="text" />
 	</div>
 </div>`);
+
+	$($("#rowTable .itemRow")[$("#rowTable .itemRow").length - 1]).find("input[type=text]").focus(function() {
+		if($(this).val() == "") {
+			var url = $(this).parents(".itemRow").find("input[type=url]").val();
+		    var filename = url.substring(url.lastIndexOf('/')+1);
+		    $(this).val(filename).select();
+		}
+	});
 }
